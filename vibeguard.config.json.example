@@ -9,24 +9,417 @@
     "max_mappings": 100000
   },
   "patterns": {
-    "keywords": [
-      {
-        "value": "my-api-key-123",
-        "category": "API_KEY"
-      }
-    ],
+    "keywords": [],
     "regex": [
       {
-        "pattern": "sk-[A-Za-z0-9]{48}",
-        "category": "OPENAI_KEY"
+        "pattern": "-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\\s\\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----",
+        "category": "PRIVATE_KEY",
+        "flags": "i"
       },
       {
-        "pattern": "(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]+",
-        "category": "GITHUB_TOKEN"
+        "pattern": "-----BEGIN PGP PRIVATE KEY BLOCK-----[\\s\\S]*?-----END PGP PRIVATE KEY BLOCK-----",
+        "category": "PGP_PRIVATE_KEY",
+        "flags": "i"
       },
       {
-        "pattern": "AKIA[0-9A-Z]{16}",
-        "category": "AWS_ACCESS_KEY"
+        "pattern": "\\beyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\b",
+        "category": "JWT",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bBearer\\s+[A-Za-z0-9._~+/=-]{20,}",
+        "category": "BEARER_TOKEN",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\bBasic\\s+[A-Za-z0-9+/=]{16,}",
+        "category": "BASIC_AUTH",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\b(?:authorization|proxy-authorization|x-api-key|api-key)\\s*[:=]\\s*[\\\"']?[A-Za-z0-9._~+/=-]{12,}",
+        "category": "AUTH_HEADER",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\b(?:cookie|set-cookie)\\s*:\\s*[^\\r\\n]{20,}",
+        "category": "COOKIE",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\b[a-z][a-z0-9+.-]*://[^\\s/:@]+:[^\\s/@]+@[^\\s]+",
+        "category": "URL_CREDENTIALS",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\b(?:api[_-]?key|apikey|secret[_-]?key|client[_-]?secret|auth[_-]?token|access[_-]?token|refresh[_-]?token|session[_-]?token|private[_-]?key|password|passwd|pwd)\\b\\s*[:=]\\s*[\\\"'](?!(?:your|my|example|placeholder|changeme|redacted|dummy|sample|test)[_-]?)[^\\\"'\\r\\n]{8,}[\\\"']",
+        "category": "SECRET_ASSIGNMENT",
+        "flags": "i"
+      },
+      {
+        "pattern": "^\\s*(?:export\\s+)?(?:API[_-]?KEY|APIKEY|SECRET[_-]?KEY|CLIENT[_-]?SECRET|AUTH[_-]?TOKEN|ACCESS[_-]?TOKEN|REFRESH[_-]?TOKEN|SESSION[_-]?TOKEN|PRIVATE[_-]?KEY|PASSWORD|PASSWD|PWD)\\s*=\\s*[A-Za-z0-9_\\-/+=]{8,}\\s*$",
+        "category": "ENV_SECRET",
+        "flags": "im"
+      },
+      {
+        "pattern": "\\baws_?secret_?access_?key\\b\\s*[:=]\\s*[\\\"']?[A-Za-z0-9/+=]{40}",
+        "category": "AWS_SECRET_KEY",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\baws_?session_?token\\b\\s*[:=]\\s*[\\\"']?[A-Za-z0-9/+=]{100,}",
+        "category": "AWS_SESSION_TOKEN",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\b(?:AKIA|ASIA|AIDA|AROA|AIPA|ANPA|ANVA|APKA)[0-9A-Z]{16}\\b",
+        "category": "AWS_ACCESS_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bsk-(?:proj-|svcacct-|admin-)?[A-Za-z0-9_-]{20,}\\b",
+        "category": "OPENAI_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bsk-ant-[A-Za-z0-9_-]{20,}\\b",
+        "category": "ANTHROPIC_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bsk-or-v1-[A-Za-z0-9]{20,}\\b",
+        "category": "OPENROUTER_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bgsk_[A-Za-z0-9]{20,}\\b",
+        "category": "GROQ_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bxai-[A-Za-z0-9]{20,}\\b",
+        "category": "XAI_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bpplx-[A-Za-z0-9]{20,}\\b",
+        "category": "PERPLEXITY_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bhf_[A-Za-z0-9]{20,}\\b",
+        "category": "HUGGINGFACE_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\br8_[A-Za-z0-9]{20,}\\b",
+        "category": "REPLICATE_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bpcsk_[A-Za-z0-9]{20,}\\b",
+        "category": "PINECONE_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bAIza[0-9A-Za-z_-]{35}\\b",
+        "category": "GOOGLE_API_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bya29\\.[0-9A-Za-z_-]{20,}\\b",
+        "category": "GOOGLE_OAUTH_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bGOCSPX-[0-9A-Za-z_-]{10,}\\b",
+        "category": "GOOGLE_CLIENT_SECRET",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bAccountKey=[A-Za-z0-9+/=]{20,}",
+        "category": "AZURE_STORAGE_KEY",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\b(?:sig|SharedAccessSignature)=[A-Za-z0-9%+/=]{20,}",
+        "category": "AZURE_SAS",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\b(?:CF_API_TOKEN|CLOUDFLARE_API_TOKEN|CLOUDFLARE_API_KEY)\\b\\s*[:=]\\s*[\\\"']?[A-Za-z0-9_-]{20,}",
+        "category": "CLOUDFLARE_TOKEN",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\\b",
+        "category": "GITHUB_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bgithub_pat_[A-Za-z0-9_]{20,}\\b",
+        "category": "GITHUB_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bgl(?:pat|rt|cbt|dt|pt|ft|imt|soat|agent)-[A-Za-z0-9_-]{20,}\\b",
+        "category": "GITLAB_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bATBB[A-Za-z0-9]{20,}\\b",
+        "category": "BITBUCKET_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bAT(?:ATT|CTT|BB)[A-Za-z0-9]{20,}\\b",
+        "category": "ATLASSIAN_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{20,}\\b",
+        "category": "STRIPE_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bwhsec_[A-Za-z0-9]{20,}\\b",
+        "category": "STRIPE_WEBHOOK",
+        "flags": ""
+      },
+      {
+        "pattern": "\\b(?:sq0atp|sq0csp)-[A-Za-z0-9_-]{20,}\\b",
+        "category": "SQUARE_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\baccess_token\\$(?:production|sandbox)\\$[A-Za-z0-9_-]{20,}\\b",
+        "category": "PAYPAL_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bshp(?:at|ca|pa|ss)_[a-fA-F0-9]{32}\\b",
+        "category": "SHOPIFY_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bxox[baprs]-[A-Za-z0-9-]{10,}\\b",
+        "category": "SLACK_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "https://hooks\\.slack\\.com/services/[A-Za-z0-9/]+",
+        "category": "SLACK_WEBHOOK",
+        "flags": ""
+      },
+      {
+        "pattern": "\\b[MN][A-Za-z0-9]{23}\\.[A-Za-z0-9_-]{6}\\.[A-Za-z0-9_-]{27}\\b",
+        "category": "DISCORD_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "https://(?:ptb\\.|canary\\.)?discord(?:app)?\\.com/api/webhooks/[0-9]+/[A-Za-z0-9_-]+",
+        "category": "DISCORD_WEBHOOK",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\b[0-9]{8,10}:[A-Za-z0-9_-]{35}\\b",
+        "category": "TELEGRAM_BOT_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bSK[0-9a-f]{32}\\b",
+        "category": "TWILIO_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bSG\\.[A-Za-z0-9_-]{16,}\\.[A-Za-z0-9_-]{16,}\\b",
+        "category": "SENDGRID_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bkey-[0-9a-f]{32}\\b",
+        "category": "MAILGUN_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\b[0-9a-f]{32}-us[0-9]{1,2}\\b",
+        "category": "MAILCHIMP_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bnpm_[A-Za-z0-9]{20,}\\b",
+        "category": "NPM_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bpypi-[A-Za-z0-9_-]{20,}\\b",
+        "category": "PYPI_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\brubygems_[A-Za-z0-9]{20,}\\b",
+        "category": "RUBYGEMS_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bdckr_pat_[A-Za-z0-9_-]{20,}\\b",
+        "category": "DOCKER_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\b(?:dop|doo)_v1_[a-f0-9]{64}\\b",
+        "category": "DIGITALOCEAN_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bvercel_[A-Za-z0-9]{20,}\\b",
+        "category": "VERCEL_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bnfp_[A-Za-z0-9]{20,}\\b",
+        "category": "NETLIFY_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bHRKU-[A-Za-z0-9_-]{20,}\\b",
+        "category": "HEROKU_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bpscale_tkn_[A-Za-z0-9_-]{20,}\\b",
+        "category": "PLANETSCALE_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bfo1_[A-Za-z0-9_-]{20,}\\b",
+        "category": "FLY_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\brnd_[A-Za-z0-9]{20,}\\b",
+        "category": "RENDER_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bnapi_[A-Za-z0-9]{20,}\\b",
+        "category": "NEON_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bsbp_[a-f0-9]{40}\\b",
+        "category": "SUPABASE_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bhvs\\.[A-Za-z0-9_-]{20,}\\b",
+        "category": "VAULT_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bdp\\.(?:pt|st|sa)\\.[A-Za-z0-9_-]{20,}\\b",
+        "category": "DOPPLER_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bops_[A-Za-z0-9_-]{20,}\\b",
+        "category": "ONEPASSWORD_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\b(?:secret_|ntn_)[A-Za-z0-9]{20,}\\b",
+        "category": "NOTION_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\blin_api_[A-Za-z0-9]{20,}\\b",
+        "category": "LINEAR_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bfigd_[A-Za-z0-9_-]{20,}\\b",
+        "category": "FIGMA_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bCFPAT-[A-Za-z0-9_-]{20,}\\b",
+        "category": "CONTENTFUL_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bPMAK-[A-Za-z0-9_-]{20,}\\b",
+        "category": "POSTMAN_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bNRAK-[A-Z0-9]{20,}\\b",
+        "category": "NEW_RELIC_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bEAA[A-Za-z0-9]{20,}\\b",
+        "category": "FACEBOOK_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bgl(?:sa|c)_[A-Za-z0-9_-]{20,}\\b",
+        "category": "GRAFANA_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bsntry(?:s|u)_[A-Za-z0-9_-]{20,}\\b",
+        "category": "SENTRY_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bre_[A-Za-z0-9]{20,}\\b",
+        "category": "RESEND_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bAAAA[A-Za-z0-9_-]{20,}:[A-Za-z0-9_-]{20,}\\b",
+        "category": "FIREBASE_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bAGE-SECRET-KEY-1[A-Z0-9]{20,}\\b",
+        "category": "AGE_SECRET_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bvk1\\.a\\.[A-Za-z0-9_-]{20,}\\b",
+        "category": "VK_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bAQVN[A-Za-z0-9_-]{20,}\\b",
+        "category": "YANDEX_API_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\bsk\\.[A-Za-z0-9_-]{20,}\\b",
+        "category": "MAPBOX_SECRET",
+        "flags": ""
+      },
+      {
+        "pattern": "\\boauth:[a-z0-9]{20,}\\b",
+        "category": "TWITCH_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\b1//[A-Za-z0-9_-]{20,}\\b",
+        "category": "GOOGLE_REFRESH_TOKEN",
+        "flags": ""
+      },
+      {
+        "pattern": "\\b0x[a-fA-F0-9]{64}\\b",
+        "category": "CRYPTO_PRIVATE_KEY",
+        "flags": ""
+      },
+      {
+        "pattern": "\\b5[HJK][1-9A-HJ-NP-Za-km-z]{49}\\b",
+        "category": "WIF_PRIVATE_KEY",
+        "flags": ""
       }
     ],
     "builtin": [
@@ -39,9 +432,20 @@
     ],
     "exclude": [
       "example.com",
+      "example.org",
+      "example.net",
       "localhost",
       "127.0.0.1",
-      "0.0.0.0"
+      "0.0.0.0",
+      "::1",
+      "your-api-key",
+      "YOUR_API_KEY",
+      "your_api_key",
+      "CHANGEME",
+      "changeme",
+      "placeholder",
+      "redacted",
+      "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     ]
   }
 }

@@ -33,10 +33,12 @@ This fork adds:
   SSE chunk reassembly when a placeholder is split across several `data:` events.
 - A fix for `ReadableStream is locked`: response bodies are read through
   `response.clone()`, so the original stream is never consumed.
-- Short placeholders (`test@example.com`) by default. Models copy them reliably;
+- Short placeholders (`__VG_EMAIL_1__`) by default. Models copy them reliably;
   long hex placeholders are frequently corrupted during generation, which makes
   restoration impossible.
-- Updated secret patterns (`gsk_...`, `sk_...`, `xai-...`, GitHub, AWS, etc.).
+- 82 bundled regex rules covering AI providers, cloud, source control, payments,
+  messaging, package registries, infrastructure, SaaS tokens, private keys,
+  JWTs, bearer/basic auth, cookies and credential-bearing URLs.
 
 ---
 
@@ -73,8 +75,8 @@ tool call args ──► execute.before: restore real values ──► local too
 Default (`placeholder_style: "short"`):
 
 ```text
-test@example.com
-sk-305cba0c467dd30f-13d5c0-9cee4a66
+__VG_EMAIL_1__
+__VG_API_KEY_2__
 ```
 
 Upstream-compatible (`placeholder_style: "hash"`):
@@ -162,7 +164,7 @@ Example:
       { "pattern": "(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}", "category": "GITHUB_TOKEN" },
       { "pattern": "AKIA[0-9A-Z]{16}", "category": "AWS_ACCESS_KEY" }
     ],
-    "builtin": ["email"],
+    "builtin": ["email", "china_phone", "china_id", "uuid", "ipv4", "mac"],
     "exclude": ["example.com", "localhost", "127.0.0.1"]
   }
 }
@@ -175,7 +177,7 @@ Example:
 | `enabled` | `false` | Master switch. A missing config also disables the plugin. |
 | `debug` | `false` | Log redaction/restoration counts and the config path. Never logs plaintext. |
 | `placeholder_prefix` | `"__VG_"` | Prefix for generated placeholders. |
-| `placeholder_style` | `"short"` | `short` (`test@example.com`) or `hash` (`__VG_EMAIL_ab12cd34ef56__`). |
+| `placeholder_style` | `"short"` | `short` (`__VG_EMAIL_1__`) or `hash` (`__VG_EMAIL_ab12cd34ef56__`). |
 | `restore_response` | `false` | Restore placeholders in provider responses. See the trade-off below. |
 | `session.ttl` | `"1h"` | Mapping lifetime, e.g. `30m`, `2h`, `1d`. Disable expiry with `0`. |
 | `session.max_mappings` | `100000` | Maximum placeholders kept per session. |
@@ -184,8 +186,37 @@ Example:
 | `patterns.builtin` | `[]` | Built-in rules: `email`, `china_phone`, `china_id`, `uuid`, `ipv4`, `mac`. |
 | `patterns.exclude` | `[]` | Exact strings that must not be redacted. |
 
-`patterns.builtin` is empty by default. Enable only the rules you need; broad rules
-such as `uuid` and `ipv4` can fill the conversation with placeholders.
+`patterns.builtin` is empty when omitted. The shipped example enables all six.
+Broad rules such as `uuid` and `ipv4` can fill the conversation with placeholders;
+remove them if the extra noise is not worth it.
+
+### Bundled coverage
+
+`vibeguard.config.json.example` includes 82 regex rules, grouped as:
+
+- **AI providers** — OpenAI, Anthropic, OpenRouter, Groq, xAI, Perplexity,
+  Hugging Face, Replicate, Pinecone.
+- **Cloud** — AWS access/secret/session keys, Google API/OAuth/client secrets,
+  Azure storage keys and SAS tokens, Cloudflare tokens.
+- **Source control** — GitHub, GitLab, Bitbucket, Atlassian.
+- **Payments** — Stripe, Square, PayPal, Shopify.
+- **Messaging and email** — Slack, Discord, Telegram, Twilio, SendGrid, Mailgun,
+  Mailchimp.
+- **Registries and infrastructure** — npm, PyPI, RubyGems, Docker, DigitalOcean,
+  Vercel, Netlify, Heroku, PlanetScale, Fly.io, Render, Neon, Supabase, Vault,
+  Doppler, 1Password.
+- **SaaS** — Notion, Linear, Figma, Contentful, Postman, New Relic, Facebook,
+  Grafana, Sentry, Resend, Firebase, Age, VK, Yandex, Mapbox, Twitch.
+- **Generic** — private key blocks, JWTs, bearer/basic auth, auth headers,
+  cookies, URL credentials, quoted secret assignments, `.env` assignments,
+  crypto private keys and WIF keys.
+
+All six built-ins are enabled in the example: `email`, `china_phone`, `china_id`,
+`uuid`, `ipv4`, `mac`.
+
+The generic assignment rules intentionally require a quoted value or a line that
+looks like a `.env` entry, so code such as `password = os.getenv("PASSWORD")` is
+not redacted.
 
 ### Enabling response restoration
 
@@ -225,6 +256,11 @@ Redaction runs before every provider request on:
 Before local tool execution, the plugin walks the tool arguments and restores
 every placeholder it knows. This lets `bash`, `read`, `write`, `edit`, and other
 tools work with the real value while the model only ever saw the placeholder.
+
+> Important: restoration also applies to file contents passed to `write`/`edit`.
+> Do not put placeholder examples into files that the model writes, or the plugin
+> will replace them with the real values. Keep documentation examples in a form
+> that does not match the placeholder pattern.
 
 The plugin does **not**:
 
