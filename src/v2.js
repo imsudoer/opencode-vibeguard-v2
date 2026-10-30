@@ -74,7 +74,7 @@ export async function vibeguardSetup(ctx) {
 
   if (debug) {
     const from = config.loadedFrom ? config.loadedFrom : "未找到（插件将 no-op）"
-    console.log(`[opencode-vibeguard] 配置：${from} enabled=${config.enabled}`)
+    console.log(`[opencode-vibeguard] 配置：${from} enabled=${config.enabled} response_mode=${config.responseMode}`)
   }
 
   if (!config.enabled) return
@@ -143,8 +143,8 @@ export async function vibeguardSetup(ctx) {
     }),
   )
 
-  // 可选：响应体还原。默认关闭，开启后流式输出会被缓冲。
-  if (config.restoreResponse) {
+  // 响应模式：stream（默认，保留流式）或 restore（缓冲后还原占位符）。
+  if (config.responseMode === "restore") {
     registrations.push(
       await ctx.session.hook("http.response", async (input) => {
         const session = getSession(input?.sessionID)

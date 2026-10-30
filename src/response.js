@@ -16,7 +16,7 @@ import { restoreDeep } from "./deep.js"
  * 这样跨事件拆分的占位符也能正确还原，且事件顺序/结构不变。
  *
  * 注意：只要注册了 `http.response`，OpenCode 会先把响应体读完再交给 AI SDK，
- * 流式渲染会退化为一次性返回。因此该能力默认关闭，由 `restore_response` 开启。
+ * 流式渲染会退化为一次性返回。因此该能力默认关闭，由 `response_mode: "restore"` 开启。
  */
 
 /** 这些 JSON 字段是“流式文本增量”，需要跨事件拼接。 */

@@ -30,6 +30,17 @@ function readJson(filepath) {
     .catch(() => null)
 }
 
+const RESTORE_ALIASES = new Set(["restore", "buffered", "buffer", "replace", "on", "true", "enabled"])
+const STREAM_ALIASES = new Set(["stream", "streaming", "passthrough", "pass-through", "off", "false", "disabled"])
+
+/** 解析响应模式；未知值回退到旧布尔开关，再回退到 stream。 */
+function parseResponseMode(value, legacyRestore) {
+  const raw = typeof value === "string" ? value.trim().toLowerCase() : ""
+  if (RESTORE_ALIASES.has(raw)) return "restore"
+  if (STREAM_ALIASES.has(raw)) return "stream"
+  return Boolean(legacyRestore) ? "restore" : "stream"
+}
+
 function normalizeConfig(raw) {
   const cfg = raw && typeof raw === "object" ? raw : {}
 
@@ -38,8 +49,12 @@ function normalizeConfig(raw) {
   const prefix = typeof cfg.placeholder_prefix === "string" && cfg.placeholder_prefix ? cfg.placeholder_prefix : "__VG_"
   // short：test@example.com（模型可准确复制）；hash：__VG_EMAIL_<hmac12>__（上游格式）
   const placeholderStyle = cfg.placeholder_style === "hash" ? "hash" : "short"
-  // 可选：在响应返回前还原占位符（会让流式输出变成一次性返回，默认关闭）。
-  const restoreResponse = Boolean(cfg.restore_response)
+  // 响应处理模式：
+  // - stream：完全不碰响应体，保留逐 token 流式输出（默认）
+  // - restore：缓冲整个响应并还原占位符，代价是流式输出变成一次性返回
+  // 兼容旧配置：restore_response: true 等价于 response_mode: "restore"。
+  const responseMode = parseResponseMode(cfg.response_mode, cfg.restore_response)
+  const restoreResponse = responseMode === "restore"
 
   const session = cfg.session && typeof cfg.session === "object" ? cfg.session : {}
   const ttlMs = parseDurationMs(session.ttl ?? "1h")
@@ -53,6 +68,7 @@ function normalizeConfig(raw) {
     debug,
     prefix,
     placeholderStyle,
+    responseMode,
     restoreResponse,
     ttlMs,
     maxMappings,

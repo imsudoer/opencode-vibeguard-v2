@@ -60,8 +60,8 @@ user prompt / history / tool output
       ┌───────┴────────┐
       │                │
       ▼                ▼
- restore_response   stream as-is
-     = true           = false
+ response_mode:     response_mode:
+     "restore"          "stream"
       │                │
       └───────┬────────┘
               ▼
@@ -149,7 +149,7 @@ Example:
   "debug": false,
   "placeholder_prefix": "__VG_",
   "placeholder_style": "short",
-  "restore_response": false,
+  "response_mode": "stream",
   "session": {
     "ttl": "1h",
     "max_mappings": 100000
@@ -178,7 +178,8 @@ Example:
 | `debug` | `false` | Log redaction/restoration counts and the config path. Never logs plaintext. |
 | `placeholder_prefix` | `"__VG_"` | Prefix for generated placeholders. |
 | `placeholder_style` | `"short"` | `short` (`__VG_EMAIL_1__`) or `hash` (`__VG_EMAIL_ab12cd34ef56__`). |
-| `restore_response` | `false` | Restore placeholders in provider responses. See the trade-off below. |
+| `response_mode` | `"stream"` | `stream` keeps token-by-token output; `restore` buffers and replaces placeholders. See below. |
+| `restore_response` | unset | Legacy boolean. `true` maps to `response_mode: "restore"`, `false` to `"stream"`. |
 | `session.ttl` | `"1h"` | Mapping lifetime, e.g. `30m`, `2h`, `1d`. Disable expiry with `0`. |
 | `session.max_mappings` | `100000` | Maximum placeholders kept per session. |
 | `patterns.keywords` | `[]` | Exact literal values to redact. |
@@ -218,13 +219,13 @@ The generic assignment rules intentionally require a quoted value or a line that
 looks like a `.env` entry, so code such as `password = os.getenv("PASSWORD")` is
 not redacted.
 
-### Enabling response restoration
+### Choosing a response mode
 
-`restore_response: false` (default) keeps token-by-token streaming. Placeholders
-may be visible in the live response, but they are still restored in tool arguments,
-and the provider never receives the plaintext.
+`response_mode: "stream"` (default) leaves provider responses untouched. Token-by-token
+streaming is preserved, placeholders may be visible in the live response, but they are
+still restored in tool arguments, and the provider never receives the plaintext.
 
-`restore_response: true` rewrites the completed provider response before OpenCode
+`response_mode: "restore"` rewrites the completed provider response before OpenCode
 sees it. This is the closest V2 equivalent of V1's `experimental.text.complete`.
 The trade-off is important:
 
@@ -238,8 +239,12 @@ The trade-off is important:
 - If the model writes a placeholder incorrectly, it cannot be restored. This is
   why `short` placeholders are the default.
 
-Set it to `true` if you need readable secrets in the assistant's answer and can
-accept buffered output.
+Set `response_mode` to `"restore"` if you need readable secrets in the assistant's
+answer and can accept buffered output. The legacy `restore_response: true` still
+works and is treated as an alias.
+
+To switch modes, edit `vibeguard.config.json` and restart OpenCode (or reload the
+plugin). The mode is read once when the plugin starts.
 
 ---
 

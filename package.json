@@ -1,6 +1,6 @@
 {
   "name": "opencode-vibeguard-v2",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "OpenCode V2 plugin: redact secrets and PII before sending requests to LLM providers, restore them locally before tool execution",
   "type": "module",
   "main": "./src/index.js",

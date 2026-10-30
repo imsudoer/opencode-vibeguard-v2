@@ -151,3 +151,39 @@ test("leaves untouched bodies and their stream intact", async () => {
   assert.equal(request.response, original)
   assert.equal(await request.response.text(), body)
 })
+
+test("stream mode keeps streaming and registers no response hook", async () => {
+  const previous = process.env.OPENCODE_VIBEGUARD_CONFIG
+  const streamDir = await mkdtemp(path.join(os.tmpdir(), "opencode-vibeguard-stream-"))
+  const streamConfig = path.join(streamDir, "vibeguard.config.json")
+  await writeFile(
+    streamConfig,
+    JSON.stringify({
+      enabled: true,
+      response_mode: "stream",
+      patterns: { builtin: ["email"], keywords: [], regex: [], exclude: [] },
+    }),
+  )
+
+  let responseHooks = 0
+  const ctx = {
+    location: { directory: streamDir },
+    session: {
+      hook: async (name) => {
+        if (name === "http.response") responseHooks++
+        return { dispose: async () => {} }
+      },
+    },
+    tool: { hook: async () => ({ dispose: async () => {} }) },
+  }
+
+  process.env.OPENCODE_VIBEGUARD_CONFIG = streamConfig
+  try {
+    const dispose = await vibeguardSetup(ctx)
+    assert.equal(responseHooks, 0, "stream mode must not intercept responses")
+    await dispose()
+  } finally {
+    process.env.OPENCODE_VIBEGUARD_CONFIG = previous
+    await rm(streamDir, { recursive: true, force: true })
+  }
+})
