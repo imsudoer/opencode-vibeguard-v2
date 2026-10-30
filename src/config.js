@@ -36,6 +36,10 @@ function normalizeConfig(raw) {
   const enabled = Boolean(cfg.enabled)
   const debug = Boolean(cfg.debug)
   const prefix = typeof cfg.placeholder_prefix === "string" && cfg.placeholder_prefix ? cfg.placeholder_prefix : "__VG_"
+  // short：test@example.com（模型可准确复制）；hash：__VG_EMAIL_<hmac12>__（上游格式）
+  const placeholderStyle = cfg.placeholder_style === "hash" ? "hash" : "short"
+  // 可选：在响应返回前还原占位符（会让流式输出变成一次性返回，默认关闭）。
+  const restoreResponse = Boolean(cfg.restore_response)
 
   const session = cfg.session && typeof cfg.session === "object" ? cfg.session : {}
   const ttlMs = parseDurationMs(session.ttl ?? "1h")
@@ -48,6 +52,8 @@ function normalizeConfig(raw) {
     enabled,
     debug,
     prefix,
+    placeholderStyle,
+    restoreResponse,
     ttlMs,
     maxMappings,
     patterns,

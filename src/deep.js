@@ -17,6 +17,7 @@ function isPlainObject(value) {
  */
 export function restoreDeep(value, session) {
   const seen = new WeakSet()
+  let changed = 0
 
   const walk = (node) => {
     if (!node || typeof node !== "object") return
@@ -26,7 +27,13 @@ export function restoreDeep(value, session) {
     if (Array.isArray(node)) {
       for (let i = 0; i < node.length; i++) {
         const v = node[i]
-        if (typeof v === "string") node[i] = restoreText(v, session)
+        if (typeof v === "string") {
+          const next = restoreText(v, session)
+          if (next !== v) {
+            node[i] = next
+            changed++
+          }
+        }
         if (v && typeof v === "object") walk(v)
       }
       return
@@ -36,12 +43,19 @@ export function restoreDeep(value, session) {
 
     for (const key of Object.keys(node)) {
       const v = node[key]
-      if (typeof v === "string") node[key] = restoreText(v, session)
+      if (typeof v === "string") {
+        const next = restoreText(v, session)
+        if (next !== v) {
+          node[key] = next
+          changed++
+        }
+      }
       if (v && typeof v === "object") walk(v)
     }
   }
 
   walk(value)
+  return changed
 }
 
 /**
@@ -54,6 +68,7 @@ export function restoreDeep(value, session) {
  */
 export function redactDeep(value, patterns, session) {
   const seen = new WeakSet()
+  let changed = 0
 
   const walk = (node) => {
     if (!node || typeof node !== "object") return
@@ -63,7 +78,13 @@ export function redactDeep(value, patterns, session) {
     if (Array.isArray(node)) {
       for (let i = 0; i < node.length; i++) {
         const v = node[i]
-        if (typeof v === "string") node[i] = redactText(v, patterns, session).text
+        if (typeof v === "string") {
+          const next = redactText(v, patterns, session).text
+          if (next !== v) {
+            node[i] = next
+            changed++
+          }
+        }
         if (v && typeof v === "object") walk(v)
       }
       return
@@ -73,10 +94,17 @@ export function redactDeep(value, patterns, session) {
 
     for (const key of Object.keys(node)) {
       const v = node[key]
-      if (typeof v === "string") node[key] = redactText(v, patterns, session).text
+      if (typeof v === "string") {
+        const next = redactText(v, patterns, session).text
+        if (next !== v) {
+          node[key] = next
+          changed++
+        }
+      }
       if (v && typeof v === "object") walk(v)
     }
   }
 
   walk(value)
+  return changed
 }

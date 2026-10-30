@@ -1,12 +1,19 @@
 {
-  "name": "opencode-vibeguard",
-  "version": "0.1.0",
-  "description": "OpenCode 插件：参考 VibeGuard 的占位符格式（__VG_...__）在发送给 LLM 前脱敏、在响应完成后自动还原、在工具执行前还原参数",
+  "name": "opencode-vibeguard-v2",
+  "version": "0.2.0",
+  "description": "OpenCode V2 plugin: redact secrets and PII before sending requests to LLM providers, restore them locally before tool execution",
   "type": "module",
   "main": "./src/index.js",
-  "exports": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./server": "./src/index.js",
+    "./index": "./src/index.js"
+  },
   "files": [
     "src",
+    "index.js",
+    "server.js",
+    "README.md",
     "README-zh.md",
     "vibeguard.config.json.example"
   ],
@@ -17,6 +24,7 @@
   "keywords": [
     "opencode",
     "opencode-plugin",
+    "opencode-v2",
     "vibeguard",
     "privacy",
     "redaction",
@@ -25,11 +33,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inkdust2021/opencode-vibeguard.git"
+    "url": "git+https://github.com/imsudoer/opencode-vibeguard-v2.git"
   },
   "bugs": {
-    "url": "https://github.com/inkdust2021/opencode-vibeguard/issues"
+    "url": "https://github.com/imsudoer/opencode-vibeguard-v2/issues"
   },
-  "homepage": "https://github.com/inkdust2021/opencode-vibeguard#readme",
+  "homepage": "https://github.com/imsudoer/opencode-vibeguard-v2#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "license": "MIT"
 }

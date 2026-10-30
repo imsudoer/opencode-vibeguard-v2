@@ -21,14 +21,17 @@ function toHexLower(buffer) {
  */
 export class PlaceholderSession {
   /**
-   * @param {{ prefix: string, ttlMs: number, maxMappings: number, secret?: Uint8Array }} options
+   * @param {{ prefix: string, style?: "short"|"hash", ttlMs: number, maxMappings: number, secret?: Uint8Array }} options
    */
   constructor(options) {
     const prefix = String(options?.prefix ?? "__VG_")
     this.prefix = prefix
+    // "short" = __VG_EMAIL_1__（模型能准确复制）；"hash" = __VG_EMAIL_<hmac12>__（上游默认）
+    this.style = options?.style === "hash" ? "hash" : "short"
     this.ttlMs = Number.isFinite(options?.ttlMs) ? Number(options.ttlMs) : 60 * 60 * 1000
     this.maxMappings = Number.isFinite(options?.maxMappings) ? Number(options.maxMappings) : 100000
     this.secret = options?.secret ? Uint8Array.from(options.secret) : randomBytes(32)
+    this.counter = 0
 
     /** @type {Map<string,string>} */
     this.forward = new Map()
@@ -73,12 +76,23 @@ export class PlaceholderSession {
   }
 
   /**
-   * 与 VibeGuard 一致：placeholder = `${prefix}${CATEGORY}_${hash12}__`
+   * placeholder = `${prefix}${CATEGORY}_${id}__`
+   * - `short`：id 为递增数字（模型更容易逐字复制，还原成功率最高）
+   * - `hash`：id 为 HMAC-SHA256 截断 12 位十六进制（上游 VibeGuard 格式）
    * @param {string} original
    * @param {string} category
    */
   generatePlaceholder(original, category) {
     const cat = sanitizeCategory(category)
+
+    if (this.style === "short") {
+      let id
+      do {
+        id = ++this.counter
+      } while (this.forward.has(`${this.prefix}${cat}_${id}__`))
+      return `${this.prefix}${cat}_${id}__`
+    }
+
     const h = createHmac("sha256", this.secret)
     h.update(String(original))
     const sum = h.digest()
@@ -141,6 +155,9 @@ export class PlaceholderSession {
 
 export function getPlaceholderRegex(prefix) {
   const escaped = String(prefix).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-  // Pattern: __VG_CATEGORY_HASH12__ or __VG_CATEGORY_HASH12_N__
-  return new RegExp(`${escaped}[A-Za-z0-9_]+_[a-f0-9A-F]{12}(?:_\\d+)?__`, "g")
+  // 同时匹配两种格式：
+  //   __VG_CATEGORY_12__（short，数字 id）
+  //   __VG_CATEGORY_ab12cd34ef56__（hash，12 位十六进制）
+  // 以及冲突时追加的 _N 后缀。
+  return new RegExp(`${escaped}[A-Za-z0-9_]+?_(?:[a-f0-9A-F]{12}|\\d+)(?:_\\d+)?__`, "g")
 }

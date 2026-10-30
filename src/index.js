@@ -33,6 +33,7 @@ export const VibeGuardPrivacy = async (ctx) => {
     if (existing) return existing
     const created = new PlaceholderSession({
       prefix: config.prefix,
+      style: config.placeholderStyle,
       ttlMs: config.ttlMs,
       maxMappings: config.maxMappings,
     })
@@ -142,3 +143,15 @@ export const VibeGuardPrivacy = async (ctx) => {
     },
   }
 }
+
+/**
+ * OpenCode V2 默认导出。
+ *
+ * V2 只认默认导出，且要求它是带 `id` 与 `setup`（或 `effect`）的对象。
+ * V1 仍然使用上面的命名导出 `VibeGuardPrivacy`。
+ */
+export { PLUGIN_ID, vibeguardSetup, vibeguardV2 } from "./v2.js"
+
+import { vibeguardV2 } from "./v2.js"
+
+export default vibeguardV2
